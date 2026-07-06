@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETCP - Eco-Tourism Cloud Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for visual flair -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ChartJS for provider statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.3s ease;
+        }
+
+        /* Ecosystem Theme Variables */
+        :root {
+            --primary: #059669;         /* Emerald 600 */
+            --primary-light: #34d399;   /* Emerald 400 */
+            --primary-dark: #064e3b;    /* Emerald 900 */
+            --secondary: #10b981;      /* Emerald 500 */
+            --accent: #f59e0b;         /* Amber 500 */
+            --bg-gradient-start: #022c22;
+            --bg-gradient-end: #064e3b;
+            --card-bg: rgba(6, 78, 59, 0.45);
+            --card-border: rgba(16, 185, 129, 0.2);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --shadow-glow: rgba(16, 185, 129, 0.3);
+            --font-scale: 100%;
+        }
+
+        /* Theme: Rainforest Canopy (Default Deep Emeralds) */
+        .theme-rainforest {
+            --primary: #059669;
+            --primary-light: #34d399;
+            --primary-dark: #022c22;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --bg-gradient-start: #041d14;
+            --bg-gradient-end: #073b28;
+            --card-bg: rgba(7, 39, 27, 0.6);
+            --card-border: rgba(16, 185, 129, 0.25);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --shadow-glow: rgba(5, 150, 105, 0.4);
+        }
+
+        /* Theme: Ocean Reef (Teals, Sapphire Blues, Coral Accents) */
+        .theme-ocean {
+            --primary: #0284c7;         /* Sky 600 */
+            --primary-light: #38bdf8;   /* Sky 400 */
+            --primary-dark: #0c4a6e;    /* Sky 900 */
+            --secondary: #0ea5e9;      /* Sky 500 */
+            --accent: #f43f5e;         /* Rose 500 */
+            --bg-gradient-start: #041d30;
+            --bg-gradient-end: #0c355a;
+            --card-bg: rgba(12, 53, 90, 0.6);
+            --card-border: rgba(14, 165, 233, 0.25);
+            --text-main: #f0f9ff;
+            --text-muted: #bae6fd;
+            --shadow-glow: rgba(2, 132, 199, 0.45);
+        }
+
+        /* Theme: Mountain Mist (Slate Greys, Pine Greens, Golden Sunsets) */
+        .theme-mountain {
+            --primary: #1e293b;         /* Slate 800 */
+            --primary-light: #94a3b8;   /* Slate 400 */
+            --primary-dark: #0f172a;    /* Slate 900 */
+            --secondary: #475569;      /* Slate 600 */
+            --accent: #f59e0b;         /* Amber 500 */
+            --bg-gradient-start: #0f172a;
+            --bg-gradient-end: #2d3748;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --card-border: rgba(148, 163, 184, 0.2);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --shadow-glow: rgba(245, 158, 11, 0.25);
+        }
+
+        /* Accessibility: High Contrast Override */
+        .high-contrast {
+            --primary: #ffffff !important;
+            --primary-light: #ffffff !important;
+            --primary-dark: #000000 !important;
+            --secondary: #ffffff !important;
+            --accent: #ffff00 !important;
+            --bg-gradient-start: #000000 !important;
+            --bg-gradient-end: #000000 !important;
+            --card-bg: #000000 !important;
+            --card-border: #ffffff !important;
+            --text-main: #ffffff !important;
+            --text-muted: #ffffff !important;
+            --shadow-glow: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .app-bg {
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+        }
+
+        .custom-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .text-theme-main { color: var(--text-main); }
+        .text-theme-muted { color: var(--text-muted); }
+        .border-theme { border-color: var(--card-border); }
+        .bg-theme-primary { background-color: var(--primary); }
+        .bg-theme-primary:hover { background-color: var(--secondary); }
+        .bg-theme-dark { background-color: var(--primary-dark); }
+        .text-theme-primary { color: var(--primary-light); }
+        .text-theme-accent { color: var(--accent); }
+        
+        /* Font size scaling helper */
+        html {
+            font-size: var(--font-scale);
+        }
+
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 10px var(--shadow-glow); }
+            50% { box-shadow: 0 0 25px var(--shadow-glow); }
+        }
+        .glow-effect {
+            animation: pulseGlow 3s infinite;
+        }
+    </style>
+</head>
+<body class="theme-rainforest app-bg text-theme-main transition-all duration-500 overflow-x-hidden">
+
+    <!-- Custom Toast Notification System -->
+    <div id="toastNotification" class="fixed top-5 right-5 z-50 transform translate-x-96 transition-all duration-300 ease-out custom-card max-w-sm rounded-xl p-4 flex items-center gap-3 border-l-4 border-l-emerald-500 shadow-2xl">
+        <div class="bg-emerald-500/20 text-emerald-400 p-2 rounded-full" id="toastIcon">
+            <i class="fas fa-check-circle text-lg"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm" id="toastTitle">Notification</h4>
+            <p class="text-xs text-slate-300 mt-0.5" id="toastMessage">Action completed successfully!</p>
+        </div>
+        <button onclick="dismissToast()" class="text-slate-400 hover:text-white ml-auto">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+        <div class="custom-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-theme-muted hover:text-theme-main transition-colors text-lg">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-2 text-theme-main flex items-center gap-2">
+                <i class="fas fa-leaf text-theme-primary"></i> <span id="modalExperienceTitle">Confirm Booking</span>
+            </h3>
+            <p class="text-sm text-theme-muted mb-6">Experience our beautiful Sri Lankan wonders safely & with 100% carbon neutralization.</p>
+            
+            <form id="bookingForm" onsubmit="confirmBooking(event)">
+                <input type="hidden" id="modalExperienceId">
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted mb-1.5">Select Date</label>
+                        <input type="date" required id="bookingDate" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted mb-1.5">Guests count</label>
+                        <input type="number" min="1" max="10" required id="bookingGuests" value="1" oninput="updateBookingModalPrice()" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="bg-black/25 p-3 rounded-lg border border-theme">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs text-theme-muted">Rate Plan:</span>
+                            <span class="text-xs font-semibold text-theme-primary" id="modalRatePlan">Standard Base</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold">Total Cost:</span>
+                            <span class="text-lg font-bold text-theme-accent" id="modalTotalPrice">$0.00</span>
+                        </div>
+                        <p class="text-[10px] text-emerald-400 mt-2 flex items-center gap-1">
+                            <i class="fas fa-tree"></i> Saves approx. <span id="modalCarbonSaving">24kg</span> CO2 footprint
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeBookingModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white rounded-xl py-3 text-sm font-semibold transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-theme-primary text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all glow-effect text-sm">Book Journey</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details Deep Dive & Reviews Modal -->
+    <div id="detailsModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+        <div class="custom-card w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl relative my-8">
+            <button onclick="closeDetailsModal()" class="absolute top-4 right-4 z-10 bg-black/55 text-white hover:bg-black/80 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="h-56 relative">
+                <img id="detailImg" src="" class="w-full h-full object-cover" alt="Cover Image">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div class="absolute bottom-4 left-6">
+                    <span id="detailBadgeType" class="text-[10px] tracking-widest uppercase font-bold text-theme-accent bg-black/60 px-2.5 py-1 rounded-full">Wildlife Safari</span>
+                    <h3 id="detailTitle" class="text-2xl font-bold text-white mt-1">Experience Title</h3>
+                    <p id="detailLocation" class="text-xs text-theme-primary"><i class="fas fa-map-marker-alt"></i> Location</p>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div>
+                    <h4 class="font-bold text-sm uppercase text-theme-muted tracking-wider mb-2">Ecosystem Profile</h4>
+                    <p id="detailDesc" class="text-xs sm:text-sm text-slate-300 leading-relaxed">Detailed bio description goes here.</p>
+                </div>
+
+                <!-- Green Score Matrix -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-black/35 p-4 rounded-xl border border-theme">
+                    <div class="text-center p-2">
+                        <span class="text-[10px] text-theme-muted uppercase block">Solar Power</span>
+                        <strong id="detailSolar" class="text-emerald-400 font-extrabold text-sm sm:text-base">80%</strong>
+                    </div>
+                    <div class="text-center p-2">
+                        <span class="text-[10px] text-theme-muted uppercase block">Zero Plastic</span>
+                        <strong id="detailPlastic" class="text-emerald-400 font-extrabold text-sm sm:text-base">100%</strong>
+                    </div>
+                    <div class="text-center p-2">
+                        <span class="text-[10px] text-theme-muted uppercase block">Local Guides</span>
+                        <strong id="detailLocalStaff" class="text-emerald-400 font-extrabold text-sm sm:text-base">100%</strong>
+                    </div>
+                    <div class="text-center p-2">
+                        <span class="text-[10px] text-theme-muted uppercase block">CO2 Saved / Pax</span>
+                        <strong id="detailCarbonOffset" class="text-theme-accent font-extrabold text-sm sm:text-base">15.4 kg</strong>
+                    </div>
+                </div>
+
+                <!-- Dynamic Community Practices -->
+                <div class="space-y-2">
+                    <h4 class="font-bold text-sm uppercase text-theme-muted tracking-wider">Host Sustainability Pledge</h4>
+                    <div class="bg-emerald-950/20 border border-emerald-500/20 p-3.5 rounded-xl flex items-start gap-2.5">
+                        <i class="fas fa-shield-heart text-emerald-400 text-lg mt-0.5"></i>
+                        <p id="detailPledge" class="text-xs text-slate-300 leading-relaxed">Host practices description goes here.</p>
+                    </div>
+                </div>
+
+                <!-- Live Reviews list & Interactive Form -->
+                <div class="space-y-4">
+                    <h4 class="font-bold text-sm uppercase text-theme-muted tracking-wider flex justify-between">
+                        <span>Traveler Testimonials</span>
+                        <span id="detailReviewsCount" class="text-theme-primary">3 Reviews</span>
+                    </h4>
+
+                    <div id="detailReviewsList" class="space-y-3">
+                        <!-- Reviews populated dynamically -->
+                    </div>
+
+                    <!-- Add Review Sandbox form -->
+                    <div class="bg-black/35 p-4 rounded-xl border border-theme space-y-3">
+                        <h5 class="font-bold text-xs text-white">Share Your Eco-Footprint Experience</h5>
+                        <form id="addReviewForm" onsubmit="submitReview(event)">
+                            <input type="hidden" id="reviewExpId">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                <input type="text" id="reviewAuthor" required placeholder="Your Name" class="bg-black/40 border border-theme text-xs text-white rounded-lg p-2 w-full focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <select id="reviewRating" class="bg-black/40 border border-theme text-xs text-white rounded-lg p-2 w-full focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="5">⭐⭐⭐⭐⭐ Outstanding (5/5)</option>
+                                    <option value="4">⭐⭐⭐⭐ Great (4/5)</option>
+                                    <option value="3">⭐⭐⭐ Good (3/5)</option>
+                                </select>
+                            </div>
+                            <textarea id="reviewText" required rows="2" placeholder="Tell other travelers about the sustainable methods, guides, and landscape..." class="bg-black/40 border border-theme text-xs text-white rounded-lg p-2 w-full mb-3 focus:outline-none focus:ring-1 focus:ring-emerald-500"></textarea>
+                            <button type="submit" class="w-full bg-theme-primary text-white font-bold text-xs py-2 rounded-lg transition-colors shadow">Post Verified Review</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-black/30 border-t border-theme flex gap-3">
+                <button onclick="closeDetailsModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors">Close</button>
+                <button id="detailBookBtn" onclick="" class="flex-1 bg-theme-primary text-white text-xs font-bold py-2.5 rounded-xl hover:bg-theme-primary/90 transition-all shadow-md">Book Experience</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        
+        <!-- Sticky Navigation Header -->
+        <header class="custom-card rounded-2xl p-4 mb-6 sticky top-4 z-40">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Platform Branding -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-theme-primary p-2.5 rounded-xl text-white shadow-lg flex items-center justify-center glow-effect">
+                        <i class="fas fa-cloud-sun text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-extrabold text-lg sm:text-xl tracking-wide uppercase text-white">ETCP Cloud</h1>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-semibold border border-emerald-500/30">Sri Lanka Startup</span>
+                        </div>
+                        <p class="text-xs text-theme-muted">Eco-Tourism Cloud Platform • Carbon-Neutral Travel</p>
+                    </div>
+                </div>
+
+                <!-- Live Language and Quick Sub Status -->
+                <div class="hidden lg:flex items-center gap-4 text-xs">
+                    <div class="bg-black/30 px-3 py-1.5 rounded-lg border border-theme flex items-center gap-2">
+                        <i class="fas fa-award text-theme-accent animate-bounce"></i>
+                        <span>Eco-Pass Status: <strong id="headerPassBadge" class="text-theme-primary">Inactive</strong></span>
+                    </div>
+                    <div class="bg-black/30 px-3 py-1.5 rounded-lg border border-theme flex items-center gap-2">
+                        <i class="fas fa-leaf text-emerald-400"></i>
+                        <span>User Carbon Saved: <strong class="text-emerald-400" id="headerCarbonCounter">32.4 kg</strong></span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs Trigger -->
+                <nav class="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+                    <button onclick="switchTab('discovery')" id="tabBtn-discovery" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-theme-primary text-white shadow-md">
+                        <i class="fas fa-search"></i> <span data-i18n="nav_discovery">Discovery Hub</span>
+                    </button>
+                    <button onclick="switchTab('journeys')" id="tabBtn-journeys" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-theme-muted hover:text-white">
+                        <i class="fas fa-map-signs"></i> <span data-i18n="nav_journeys">Eco-Journeys</span>
+                    </button>
+                    <button onclick="switchTab('voyager')" id="tabBtn-voyager" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-theme-muted hover:text-white">
+                        <i class="fas fa-map-marked-alt"></i> <span data-i18n="nav_voyager">Voyager Planner</span>
+                    </button>
+                    <button onclick="switchTab('provider')" id="tabBtn-provider" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-theme-muted hover:text-white">
+                        <i class="fas fa-chart-line"></i> <span data-i18n="nav_provider">EEN Network</span>
+                    </button>
+                    <button onclick="switchTab('settings')" id="tabBtn-settings" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-theme-muted hover:text-white">
+                        <i class="fas fa-cog"></i> <span data-i18n="nav_settings">Settings</span>
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- TAB: ECO-DISCOVERY HUB -->
+        <main id="tabContent-discovery" class="tab-content block space-y-6">
+            
+            <!-- Hero Promo Banner & Eco Pass Highlight -->
+            <div class="custom-card rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative">
+                <div class="absolute inset-0 bg-cover bg-center opacity-10 mix-blend-overlay pointer-events-none" style="background-image: url('https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&q=80&w=1200');"></div>
+                <div class="space-y-3 z-10 max-w-xl">
+                    <span class="text-xs font-bold text-theme-accent uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fas fa-sparkles"></i> Unveil Sri Lanka's Wild Heart
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                        Revolutionize Your Adventure Sustainably.
+                    </h2>
+                    <p class="text-sm text-theme-muted leading-relaxed">
+                        Discover low-impact, local-guided retreats, wildlife safe-havens, and hiking journeys designed to preserve the vibrant landscapes of Ceylon.
+                    </p>
+                    <div class="flex flex-wrap gap-2.5 pt-2">
+                        <span class="bg-white/10 text-white border border-white/20 text-[11px] px-3 py-1 rounded-full flex items-center gap-1">
+                            <i class="fas fa-hands-helping text-theme-primary"></i> 100% Local Managed
+                        </span>
+                        <span class="bg-white/10 text-white border border-white/20 text-[11px] px-3 py-1 rounded-full flex items-center gap-1">
+                            <i class="fas fa-percentage text-theme-accent"></i> Eco-Pass Integration
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Eco Pass Pricing card -->
+                <div class="custom-card bg-black/40 border border-emerald-500/30 rounded-2xl p-5 w-full md:w-80 space-y-4 shrink-0 relative overflow-hidden z-10">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-slate-900 font-extrabold text-[9px] uppercase tracking-wider px-3 py-1 rounded-bl-xl shadow-lg">
+                        Best Value
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-base text-white flex items-center gap-1.5">
+                            <i class="fas fa-infinity text-emerald-400"></i> Infinite Eco-Pass
+                        </h4>
+                        <p class="text-xs text-theme-muted">All-inclusive access to premier partner reserves.</p>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-extrabold text-white" id="passPriceDisplay">$49.99</span>
+                        <span class="text-xs text-theme-muted">/ month</span>
+                    </div>
+                    <ul class="text-[11px] text-theme-muted space-y-1.5">
+                        <li class="flex items-center gap-1.5"><i class="fas fa-check text-emerald-400"></i> Free Entry to select wild sanctuaries</li>
+                        <li class="flex items-center gap-1.5"><i class="fas fa-check text-emerald-400"></i> Local guide services included</li>
+                        <li class="flex items-center gap-1.5"><i class="fas fa-check text-emerald-400"></i> Multi-day Sri Lanka Train Pass discount</li>
+                    </ul>
+                    <button onclick="toggleEcoPassSubscription()" id="passSubscribeBtn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs tracking-wider py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                        <i class="fas fa-ticket-alt"></i> Subscribe Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Discovery Dynamic Engine Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Search & Filters sidebar -->
+                <div class="lg:col-span-1 space-y-5">
+                    <div class="custom-card rounded-2xl p-5 space-y-5">
+                        <h3 class="font-bold text-base text-white border-b border-theme pb-2 flex items-center gap-2">
+                            <i class="fas fa-sliders-h text-theme-primary"></i> Filter Experiences
+                        </h3>
+
+                        <!-- Search Box Input -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted">Search Name / Region</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-theme-muted">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" oninput="applyFilters()" placeholder="e.g. Ella, Safari, Whale..." class="w-full bg-black/40 border border-theme rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-slate-500">
+                            </div>
+                        </div>
+
+                        <!-- Activity Category Selector -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted">Experience Type</label>
+                            <select id="typeFilter" onchange="applyFilters()" class="w-full bg-black/40 border border-theme rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <option value="all">All Activities</option>
+                                <option value="Wildlife Safari">Wildlife Safari</option>
+                                <option value="Hiking & Trek">Hiking & Trek</option>
+                                <option value="Volunteering & Nature">Volunteering & Nature</option>
+                                <option value="Coastal Ecosystems">Coastal Ecosystems</option>
+                            </select>
+                        </div>
+
+                        <!-- Sustainability Leaves Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center text-xs font-semibold">
+                                <span class="text-theme-muted uppercase tracking-wider">Green Rating (Leaves)</span>
+                                <span class="text-emerald-400 font-bold" id="ratingValue">3+ Leaves</span>
+                            </div>
+                            <input type="range" id="ratingFilter" min="1" max="5" value="3" oninput="updateRatingLabel(this.value); applyFilters();" class="w-full h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <div class="flex justify-between text-[10px] text-theme-muted">
+                                <span>1 Leaf (Basic)</span>
+                                <span>5 Leaves (Elite)</span>
+                            </div>
+                        </div>
+
+                        <!-- Sri Lankan Location Selector -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted">Location Hub</label>
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-2" id="locationCheckboxes">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <button onclick="resetFilters()" class="w-full border border-theme hover:bg-white/5 text-theme-muted hover:text-white transition-all text-xs py-2 rounded-xl flex items-center justify-center gap-1.5">
+                            <i class="fas fa-history"></i> Reset All Filters
+                        </button>
+                    </div>
+
+                    <!-- Sri Lankan Impact Stat Card -->
+                    <div class="custom-card rounded-2xl p-5 bg-gradient-to-tr from-emerald-950/20 to-teal-950/20 border border-emerald-500/20 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-heart text-rose-500"></i>
+                            <h4 class="font-bold text-sm text-white">Startup Pledge</h4>
+                        </div>
+                        <p class="text-xs text-theme-muted leading-relaxed">
+                            For every booking made on ETCP, **5% of profits** flow directly into supporting local Sri Lankan schools and buffer-zone wildlife conservation efforts.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Experiences Catalog Grid -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                            <i class="fas fa-map-marked text-theme-primary"></i> Catalog Offerings (<span id="resultsCount">0</span>)
+                        </h3>
+                        <div class="text-xs text-theme-muted">
+                            Sorted by: <strong class="text-white">Eco Rating (High to Low)</strong>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="experiencesGrid">
+                        <!-- Experiences dynamic container -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB: ECO-JOURNEYS DASHBOARD -->
+        <main id="tabContent-journeys" class="tab-content hidden space-y-6">
+            
+            <!-- Dashboard Eco Impact Tracker Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="custom-card rounded-2xl p-5 flex items-center gap-4">
+                    <div class="bg-emerald-500/10 text-emerald-400 p-4 rounded-2xl border border-emerald-500/30 text-2xl">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-theme-muted block font-semibold uppercase tracking-wider">Carbon Saving</span>
+                        <h4 class="text-2xl font-black text-white" id="statCarbonOffset">142.4 kg</h4>
+                        <p class="text-[10px] text-emerald-400 mt-0.5">Equivalent to 12 pine trees</p>
+                    </div>
+                </div>
+
+                <div class="custom-card rounded-2xl p-5 flex items-center gap-4">
+                    <div class="bg-cyan-500/10 text-cyan-400 p-4 rounded-2xl border border-cyan-500/30 text-2xl">
+                        <i class="fas fa-hands-holding"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-theme-muted block font-semibold uppercase tracking-wider">Community Fund</span>
+                        <h4 class="text-2xl font-black text-white" id="statCommunityFund">$85.20</h4>
+                        <p class="text-[10px] text-cyan-400 mt-0.5">Sent to rural Ceylon artists</p>
+                    </div>
+                </div>
+
+                <div class="custom-card rounded-2xl p-5 flex items-center gap-4">
+                    <div class="bg-amber-500/10 text-amber-400 p-4 rounded-2xl border border-amber-500/30 text-2xl">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-theme-muted block font-semibold uppercase tracking-wider">Wishlist Items</span>
+                        <h4 class="text-2xl font-black text-white" id="statWishlistCount">0 Items</h4>
+                        <p class="text-[10px] text-amber-400 mt-0.5">Experiences saved for later</p>
+                    </div>
+                </div>
+
+                <div class="custom-card rounded-2xl p-5 flex items-center gap-4">
+                    <div class="bg-rose-500/10 text-rose-400 p-4 rounded-2xl border border-rose-500/30 text-2xl">
+                        <i class="fas fa-compass"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-theme-muted block font-semibold uppercase tracking-wider">Sanctuaries Visited</span>
+                        <h4 class="text-2xl font-black text-white" id="statCompletedCount">2 Safaris</h4>
+                        <p class="text-[10px] text-rose-400 mt-0.5">Certified low impact voyager</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double Column layout: Current Bookings & AI Recommendation Engine -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Main Booked Itinerary -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex justify-between items-center border-b border-theme pb-2.5">
+                        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                            <i class="fas fa-history text-theme-primary"></i> Your Booked Experiences
+                        </h3>
+                        <div class="flex gap-2">
+                            <button onclick="sortBookings('date')" class="text-[11px] bg-white/5 border border-theme text-white hover:bg-white/10 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+                                <i class="fas fa-calendar-alt"></i> Sort Date
+                            </button>
+                            <button onclick="sortBookings('rating')" class="text-[11px] bg-white/5 border border-theme text-white hover:bg-white/10 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+                                <i class="fas fa-star text-theme-accent"></i> Sort Rating
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic list container -->
+                    <div class="space-y-4" id="bookedExperiencesList">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Digital Eco-Pass Wallet Section -->
+                    <div class="custom-card rounded-2xl p-5 space-y-4 bg-gradient-to-r from-emerald-950/20 via-black/40 to-slate-900/40 border border-emerald-500/20">
+                        <h4 class="font-extrabold text-sm text-white flex items-center gap-2">
+                            <i class="fas fa-address-card text-emerald-400"></i> My Active Subscriptions Wallet
+                        </h4>
+                        <div class="flex flex-col sm:flex-row gap-5 items-center justify-between">
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span id="passStateText" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full border border-slate-700">Passive Plan</span>
+                                    <strong class="text-xs text-theme-muted">No Code Active</strong>
+                                </div>
+                                <h5 class="font-bold text-base text-white">Infinite Ceylon Pass</h5>
+                                <p class="text-xs text-slate-400 leading-relaxed max-w-sm">
+                                    Your digital eco-pass acts as a boarding voucher for certified local state trains and regional sanctuaries.
+                                </p>
+                            </div>
+                            <!-- Live SVG QR Code simulation -->
+                            <div class="bg-white p-3 rounded-xl shadow-xl flex flex-col items-center shrink-0">
+                                <svg width="100" height="100" viewBox="0 0 100 100" class="fill-slate-950">
+                                    <!-- QR pattern layout -->
+                                    <rect x="0" y="0" width="30" height="30" />
+                                    <rect x="5" y="5" width="20" height="20" fill="white" />
+                                    <rect x="10" y="10" width="10" height="10" />
+                                    <rect x="70" y="0" width="30" height="30" />
+                                    <rect x="75" y="5" width="20" height="20" fill="white" />
+                                    <rect x="80" y="10" width="10" height="10" />
+                                    <rect x="0" y="70" width="30" height="30" />
+                                    <rect x="5" y="75" width="20" height="20" fill="white" />
+                                    <rect x="10" y="80" width="10" height="10" />
+                                    <!-- Random bits -->
+                                    <rect x="40" y="10" width="10" height="15" />
+                                    <rect x="45" y="30" width="15" height="10" />
+                                    <rect x="15" y="45" width="10" height="10" />
+                                    <rect x="75" y="40" width="15" height="15" />
+                                    <rect x="40" y="60" width="20" height="20" />
+                                    <rect x="50" y="85" width="15" height="10" />
+                                    <rect x="80" y="75" width="15" height="15" />
+                                </svg>
+                                <span class="text-[9px] text-slate-600 font-bold uppercase mt-1 tracking-wider">Scan Bio-ID</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar: Wishlist & Discover Similar recommended products -->
+                <div class="space-y-6">
+                    
+                    <!-- Wishlist Component -->
+                    <div class="custom-card rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-base text-white flex items-center gap-2 border-b border-theme pb-2">
+                            <i class="fas fa-heart text-rose-500"></i> My Eco-Wishlist
+                        </h3>
+                        <div id="wishlistContainer" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Recommendation Engine Widget -->
+                    <div class="custom-card rounded-2xl p-5 space-y-4 bg-gradient-to-br from-indigo-950/10 to-emerald-950/25 border-l-4 border-l-theme-primary">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                                <i class="fas fa-brain text-purple-400"></i> Discover Similar Engine
+                            </h3>
+                            <span class="text-[9px] bg-purple-500/20 text-purple-300 font-extrabold px-2 py-0.5 rounded-full uppercase">Predictive</span>
+                        </div>
+                        <p class="text-xs text-theme-muted leading-relaxed">
+                            Analyzing past carbon choices & favorite regions to generate personalized eco-tours matching your traveler footprint profile.
+                        </p>
+                        
+                        <div id="recommendationsContainer" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- TAB: ETCP VOYAGER (Interactive Map & Route Planner) -->
+        <main id="tabContent-voyager" class="tab-content hidden space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <!-- Voyager Control Center -->
+                <div class="lg:col-span-2 space-y-5">
+                    <div class="custom-card rounded-2xl p-5 space-y-4">
+                        <div class="border-b border-theme pb-2.5">
+                            <span class="text-[10px] bg-theme-primary/20 text-theme-primary px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Itinerary Engine</span>
+                            <h3 class="font-bold text-lg text-white mt-1.5 flex items-center gap-2">
+                                <i class="fas fa-map-marked-alt text-theme-accent"></i> Voyage Route Planner
+                            </h3>
+                        </div>
+
+                        <p class="text-xs text-theme-muted leading-relaxed">
+                            Plan multi-region Sri Lankan tracks. Choose coordinates below or tap directly on the map coordinates to connect nodes and estimate your transit footprint.
+                        </p>
+
+                        <!-- Selected destinations list -->
+                        <div class="space-y-2">
+                            <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted">Selected Map Nodes</label>
+                            <div class="min-h-12 bg-black/40 border border-theme rounded-xl p-3 flex flex-wrap gap-2 items-center" id="voyagerSelectedNodes">
+                                <span class="text-xs text-slate-500 italic">No nodes active. Tap dots on the map outline to add!</span>
+                            </div>
+                        </div>
+
+                        <!-- Transit Selector -->
+                        <div class="space-y-2 pt-2">
+                            <label class="block text-xs uppercase tracking-wider font-semibold text-theme-muted">Travel Transit Mode</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="setTransitMode('electric')" id="transitBtn-electric" class="transit-btn px-2.5 py-2 rounded-xl text-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-semibold transition-all">
+                                    <i class="fas fa-charging-station block text-base mb-1"></i>
+                                    <span class="text-[10px]">Electric Taxi</span>
+                                </button>
+                                <button onclick="setTransitMode('train')" id="transitBtn-train" class="transit-btn px-2.5 py-2 rounded-xl text-center bg-white/5 border border-theme text-theme-muted font-semibold transition-all">
+                                    <i class="fas fa-train block text-base mb-1"></i>
+                                    <span class="text-[10px]">Eco Train</span>
+                                </button>
+                                <button onclick="setTransitMode('hybrid')" id="transitBtn-hybrid" class="transit-btn px-2.5 py-2 rounded-xl text-center bg-white/5 border border-theme text-theme-muted font-semibold transition-all">
+                                    <i class="fas fa-car block text-base mb-1"></i>
+                                    <span class="text-[10px]">Hybrid Share</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Carbon footprint savings estimator -->
+                        <div class="bg-black/35 p-4 rounded-xl border border-theme space-y-3">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-theme-muted">Estimated Total Distance:</span>
+                                <strong class="text-white" id="voyagerDistance">0 km</strong>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-theme-muted">Standard Carbon footprint:</span>
+                                <strong class="text-rose-400" id="voyagerStandardCo2">0.0 kg CO2</strong>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-emerald-400 font-semibold">Your Transit Footprint:</span>
+                                <strong class="text-emerald-400" id="voyagerEcoCo2">0.0 kg CO2</strong>
+                            </div>
+                            <div class="border-t border-theme pt-2.5 flex justify-between items-center">
+                                <span class="text-xs font-bold text-white uppercase tracking-wider">Total Net Saved:</span>
+                                <span class="text-sm font-extrabold text-theme-accent px-2.5 py-0.5 rounded-full bg-theme-accent/10 border border-theme-accent/20" id="voyagerNetSaved">0.0 kg</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="clearVoyagerItinerary()" class="flex-1 border border-theme hover:bg-white/5 text-theme-muted font-semibold text-xs py-2.5 rounded-xl transition-colors">
+                                Reset Route
+                            </button>
+                            <button onclick="bookEntireVoyager()" class="flex-1 bg-theme-primary text-slate-950 hover:bg-theme-primary/90 font-bold text-xs py-2.5 rounded-xl transition-colors shadow-md glow-effect">
+                                Book Full Track
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Destination spotlight -->
+                    <div class="custom-card rounded-2xl p-5 space-y-3" id="spotlightCard">
+                        <h4 class="font-bold text-xs text-theme-muted uppercase tracking-wider">Destination Spotlight</h4>
+                        <div class="text-sm text-slate-400 italic">Click an island coordinate to preview detailed reserve bio-practices.</div>
+                    </div>
+                </div>
+
+                <!-- Live Vector SVG Map of Sri Lanka -->
+                <div class="lg:col-span-3 custom-card rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden min-h-[500px]">
+                    <div class="absolute top-4 left-4 text-xs bg-black/40 px-3 py-1.5 rounded-lg border border-theme text-theme-muted">
+                        <i class="fas fa-info-circle text-theme-primary mr-1"></i> Click nodes on the interactive Ceylon map to trace path
+                    </div>
+                    
+                    <!-- Stylized SVG Map Overlay of Sri Lanka -->
+                    <div class="w-full max-w-sm aspect-[4/5] relative">
+                        <svg viewBox="0 0 400 600" class="w-full h-full drop-shadow-2xl">
+                            <!-- Background Map Outlines -->
+                            <path d="M 210,50 
+                                     C 230,40 250,55 240,75 
+                                     C 230,95 245,115 255,130 
+                                     C 265,145 285,160 290,180 
+                                     C 295,200 305,210 300,230 
+                                     C 295,250 310,270 305,300 
+                                     C 300,330 320,350 315,380 
+                                     C 310,410 320,440 310,470 
+                                     C 300,500 290,520 270,540 
+                                     C 250,560 220,570 200,565 
+                                     C 180,560 160,550 150,530 
+                                     C 140,510 135,490 120,470 
+                                     C 105,450 110,430 115,410 
+                                     C 120,390 110,370 115,350 
+                                     C 120,330 130,310 135,280 
+                                     C 140,250 145,220 155,200 
+                                     C 165,180 180,160 185,140 
+                                     C 190,120 180,100 185,80 
+                                     C 190,60 195,65 210,50 Z" 
+                                  fill="rgba(16, 185, 129, 0.04)" 
+                                  stroke="rgba(16, 185, 129, 0.35)" 
+                                  stroke-width="2.5" 
+                                  class="transition-all duration-300"
+                                  id="islandShape"/>
+
+                            <!-- Connecting Route Lines (Rendered dynamically in JS) -->
+                            <path id="routePathLine" d="" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="8 4" class="transition-all duration-500"/>
+
+                            <!-- Map Pins / Coordinates -->
+                            <!-- Sinharaja Rainforest Canopy -->
+                            <g class="cursor-pointer group" onclick="toggleMapNode(1)" transform="translate(180, 460)">
+                                <circle r="16" class="fill-emerald-500/20 stroke-emerald-400 group-hover:scale-125 transition-transform" stroke-width="1.5" />
+                                <circle r="6" class="fill-emerald-400 transition-all glow-effect" id="mapCircle-1" />
+                                <text y="-22" x="0" text-anchor="middle" class="fill-white text-[10px] font-bold tracking-tight opacity-75 group-hover:opacity-100 transition-opacity">Sinharaja</text>
+                            </g>
+
+                            <!-- Ella Highlands -->
+                            <g class="cursor-pointer group" onclick="toggleMapNode(2)" transform="translate(230, 410)">
+                                <circle r="16" class="fill-emerald-500/20 stroke-emerald-400 group-hover:scale-125 transition-transform" stroke-width="1.5" />
+                                <circle r="6" class="fill-emerald-400 transition-all glow-effect" id="mapCircle-2" />
+                                <text y="-22" x="0" text-anchor="middle" class="fill-white text-[10px] font-bold tracking-tight opacity-75 group-hover:opacity-100 transition-opacity">Ella Ridge</text>
+                            </g>
+
+                            <!-- Yala Sanctuary -->
+                            <g class="cursor-pointer group" onclick="toggleMapNode(3)" transform="translate(265, 480)">
+                                <circle r="16" class="fill-emerald-500/20 stroke-emerald-400 group-hover:scale-125 transition-transform" stroke-width="1.5" />
+                                <circle r="6" class="fill-emerald-400 transition-all" id="mapCircle-3" />
+                                <text y="28" x="0" text-anchor="middle" class="fill-white text-[10px] font-bold tracking-tight opacity-75 group-hover:opacity-100 transition-opacity">Yala Eco</text>
+                            </g>
+
+                            <!-- Mirissa Ocean Reef -->
+                            <g class="cursor-pointer group" onclick="toggleMapNode(4)" transform="translate(170, 525)">
+                                <circle r="16" class="fill-emerald-500/20 stroke-emerald-400 group-hover:scale-125 transition-transform" stroke-width="1.5" />
+                                <circle r="6" class="fill-emerald-400 transition-all" id="mapCircle-4" />
+                                <text y="28" x="0" text-anchor="middle" class="fill-white text-[10px] font-bold tracking-tight opacity-75 group-hover:opacity-100 transition-opacity">Mirissa Blue</text>
+                            </g>
+
+                            <!-- Knuckles Range -->
+                            <g class="cursor-pointer group" onclick="toggleMapNode(5)" transform="translate(225, 305)">
+                                <circle r="16" class="fill-emerald-500/20 stroke-emerald-400 group-hover:scale-125 transition-transform" stroke-width="1.5" />
+                                <circle r="6" class="fill-emerald-400 transition-all" id="mapCircle-5" />
+                                <text y="-22" x="0" text-anchor="middle" class="fill-white text-[10px] font-bold tracking-tight opacity-75 group-hover:opacity-100 transition-opacity">Knuckles</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB: ECO-EXPLORER NETWORK (EEN PROVIDER PORTAL) -->
+        <main id="tabContent-provider" class="tab-content hidden space-y-6">
+            
+            <div class="custom-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-emerald-950/25 to-sky-950/25">
+                <div class="space-y-2">
+                    <span class="text-xs font-bold text-theme-accent uppercase tracking-widest flex items-center gap-1">
+                        <i class="fas fa-lock"></i> Secured Host Console
+                    </span>
+                    <h2 class="text-2xl font-bold text-white">Eco-Host Business Center (EEN)</h2>
+                    <p class="text-xs text-theme-muted leading-relaxed">
+                        Publish low impact tours, analyze real-time dynamic guest flows, view metrics on local community engagement, and monitor organic payouts.
+                    </p>
+                </div>
+                <!-- Provider state badge -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="bg-black/35 px-4 py-2 rounded-xl border border-theme">
+                        <span class="text-[10px] text-theme-muted block font-semibold uppercase">Verification Level</span>
+                        <strong class="text-emerald-400 text-sm flex items-center gap-1.5"><i class="fas fa-check-double"></i> Elite Gold Host</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Analytics Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Analytics Charts -->
+                <div class="lg:col-span-2 custom-card rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center border-b border-theme pb-2.5">
+                        <h3 class="font-bold text-sm text-white flex items-center gap-1.5">
+                            <i class="fas fa-chart-bar text-theme-primary"></i> Monthly Visitor Engagement Trends
+                        </h3>
+                        <span class="text-[10px] text-theme-muted">Updated real-time</span>
+                    </div>
+                    <!-- Chart Canvas container -->
+                    <div class="relative h-64 w-full">
+                        <canvas id="eenAnalyticsChart"></canvas>
+                    </div>
+
+                    <!-- Host Live Bookings Monitor -->
+                    <div class="border-t border-theme pt-4 space-y-3">
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-theme-muted">Live Passenger Manifest Log</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead>
+                                    <tr class="border-b border-theme text-theme-muted">
+                                        <th class="py-2">Traveler</th>
+                                        <th class="py-2">Experience</th>
+                                        <th class="py-2">Date</th>
+                                        <th class="py-2 text-right">Payout Amount</th>
+                                        <th class="py-2 text-center">Cloud Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="providerManifestBody">
+                                    <!-- Updated Dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration / Form to publish new offering -->
+                <div class="custom-card rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-sm text-white border-b border-theme pb-2 flex items-center gap-1.5">
+                        <i class="fas fa-plus-circle text-theme-accent"></i> Publish New Eco-Offering
+                    </h3>
+                    
+                    <form id="providerOfferingForm" onsubmit="handlePublishOffering(event)" class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Offering Name</label>
+                            <input type="text" id="offeringTitle" required placeholder="e.g. Ella Canopy Forest Birdwatching" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Region Hub</label>
+                                <select id="offeringLocation" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="Sinharaja">Sinharaja</option>
+                                    <option value="Ella">Ella</option>
+                                    <option value="Yala">Yala</option>
+                                    <option value="Mirissa">Mirissa</option>
+                                    <option value="Knuckles">Knuckles</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Activity Category</label>
+                                <select id="offeringType" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <option value="Wildlife Safari">Wildlife Safari</option>
+                                    <option value="Hiking & Trek">Hiking & Trek</option>
+                                    <option value="Volunteering & Nature">Volunteering & Nature</option>
+                                    <option value="Coastal Ecosystems">Coastal Ecosystems</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Base Price ($)</label>
+                                <input type="number" id="offeringPrice" required value="45" min="5" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Green Rating (Leaves)</label>
+                                <input type="number" id="offeringEco" required value="5" min="1" max="5" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Core Sustainability Practice</label>
+                            <input type="text" id="offeringPractice" required placeholder="e.g. 100% solar powered, zero single-use plastics" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-theme-muted font-semibold mb-1 uppercase tracking-wider">Promo Image Cover Link</label>
+                            <input type="text" id="offeringImage" required placeholder="Paste Unsplash URL or leave default" value="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=400" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+
+                        <button type="submit" class="w-full bg-theme-primary text-slate-950 hover:bg-theme-primary/90 font-bold py-2.5 rounded-xl transition-all shadow-md mt-2">
+                            Publish to Cloud Discovery Hub
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB: SETTINGS & PERSONALIZATION -->
+        <main id="tabContent-settings" class="tab-content hidden space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Ecosystem Theme Options Selector -->
+                <div class="custom-card rounded-2xl p-6 space-y-4 lg:col-span-2">
+                    <h3 class="font-bold text-base text-white border-b border-theme pb-2.5 flex items-center gap-2">
+                        <i class="fas fa-palette text-theme-primary"></i> Ecosystem Visual Themes
+                    </h3>
+                    <p class="text-xs text-theme-muted leading-relaxed">
+                        Customize your entire experience with palettes matching natural ecosystems. Selecting a theme instantly adjusts ambient glow colors, backgrounds, and highlights.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                        <!-- Theme Card 1: Rainforest -->
+                        <div onclick="changeTheme('rainforest')" class="custom-card rounded-xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all text-center relative overflow-hidden group border-2 border-emerald-500" id="themeCard-rainforest">
+                            <div class="h-1.5 w-full bg-emerald-600 absolute top-0 left-0"></div>
+                            <i class="fas fa-tree text-3xl text-emerald-400 mb-2 mt-2"></i>
+                            <h4 class="font-bold text-sm text-white">Rainforest Canopy</h4>
+                            <p class="text-[10px] text-theme-muted mt-1">Deep leafy greens, soft sage & warm amber highlights.</p>
+                            <span class="text-[9px] bg-emerald-500/20 text-emerald-300 font-extrabold px-2 py-0.5 rounded-full absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                        </div>
+
+                        <!-- Theme Card 2: Ocean -->
+                        <div onclick="changeTheme('ocean')" class="custom-card rounded-xl p-4 cursor-pointer hover:border-sky-500/50 transition-all text-center relative overflow-hidden group" id="themeCard-ocean">
+                            <div class="h-1.5 w-full bg-sky-500 absolute top-0 left-0"></div>
+                            <i class="fas fa-water text-3xl text-sky-400 mb-2 mt-2"></i>
+                            <h4 class="font-bold text-sm text-white">Ocean Reef</h4>
+                            <p class="text-[10px] text-theme-muted mt-1">Stunning marine blues, reef teals & rich coral accent.</p>
+                            <span class="text-[9px] bg-sky-500/20 text-sky-300 font-extrabold px-2 py-0.5 rounded-full absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                        </div>
+
+                        <!-- Theme Card 3: Mountain -->
+                        <div onclick="changeTheme('mountain')" class="custom-card rounded-xl p-4 cursor-pointer hover:border-amber-500/50 transition-all text-center relative overflow-hidden group" id="themeCard-mountain">
+                            <div class="h-1.5 w-full bg-slate-600 absolute top-0 left-0"></div>
+                            <i class="fas fa-mountain text-3xl text-slate-400 mb-2 mt-2"></i>
+                            <h4 class="font-bold text-sm text-white">Mountain Mist</h4>
+                            <p class="text-[10px] text-theme-muted mt-1">Deep slate rock tones, pine greens & gold sun glows.</p>
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 font-extrabold px-2 py-0.5 rounded-full absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">Select</span>
+                        </div>
+                    </div>
+
+                    <!-- Accessibility Options -->
+                    <div class="border-t border-theme pt-5 space-y-4">
+                        <h4 class="font-bold text-base text-white flex items-center gap-2">
+                            <i class="fas fa-universal-access text-theme-primary"></i> Accessibility & Compliance
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="bg-black/35 p-4 rounded-xl border border-theme space-y-2">
+                                <label class="block font-semibold text-theme-muted uppercase tracking-wider">Interface Font Scale</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="range" min="80" max="130" value="100" class="w-full accent-emerald-500 cursor-pointer" oninput="changeFontScale(this.value)">
+                                    <span id="fontScaleLabel" class="font-bold text-white shrink-0">100%</span>
+                                </div>
+                            </div>
+                            <div class="bg-black/35 p-4 rounded-xl border border-theme flex justify-between items-center">
+                                <div>
+                                    <span class="block font-semibold text-theme-muted uppercase tracking-wider">High Contrast Mode</span>
+                                    <p class="text-[10px] text-slate-400">Maximizes color differential for readability.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="contrastToggle" class="sr-only peer" onchange="toggleHighContrast()">
+                                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Language, Localization, Payment Settings -->
+                <div class="custom-card rounded-2xl p-6 space-y-5">
+                    <h3 class="font-bold text-base text-white border-b border-theme pb-2.5 flex items-center gap-2">
+                        <i class="fas fa-globe text-theme-primary"></i> Language & Region
+                    </h3>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="block text-theme-muted font-semibold mb-1.5 uppercase tracking-wider">Select Language</label>
+                            <select id="languageSelect" onchange="changeLanguage()" class="w-full bg-black/40 border border-theme rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                <option value="en">English (US)</option>
+                                <option value="si">සිංහල (Sinhalese)</option>
+                                <option value="ta">தமிழ் (Tamil)</option>
+                                <option value="fr">Français (French)</option>
+                            </select>
+                        </div>
+
+                        <div class="pt-2">
+                            <h3 class="font-bold text-sm text-white border-b border-theme pb-2 flex items-center gap-2 mb-3">
+                                <i class="fas fa-credit-card text-theme-primary"></i> Payment Methods
+                            </h3>
+                            <div class="bg-black/35 p-3 rounded-lg border border-theme flex justify-between items-center mb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fab fa-cc-visa text-xl text-blue-400"></i>
+                                    <div>
+                                        <p class="font-bold text-xs">Visa ending in •••• 5642</p>
+                                        <p class="text-[10px] text-theme-muted">Expires 08/29</p>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full">Default</span>
+                            </div>
+                            <button onclick="showToast('Payment Method', 'Updating cards is simulated in the sandbox environments.')" class="w-full border border-theme hover:bg-white/5 text-theme-muted font-semibold text-xs py-2 rounded-xl transition-all">
+                                Update Billing Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Page Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-8">
+        <div class="custom-card rounded-2xl p-6 text-center text-xs text-theme-muted space-y-2">
+            <p>© 2026 Eco-Tourism Cloud Platform (ETCP). Created proudly by green innovators in Colombo, Sri Lanka.</p>
+            <p>Empowered by Cloud Computing. Carbon neutral certified hosting infrastructure.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Real-Time Local DB / Initial Experiences Array
+        const initialExperiences = [
+            {
+                id: 1,
+                title: "Sinharaja Canopy Conservation Retreat",
+                location: "Sinharaja",
+                type: "Volunteering & Nature",
+                rating: 5,
+                price: 75,
+                ecoRating: 5,
+                practices: "100% solar power, Zero plastic, Local reforest program",
+                image: "https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&q=80&w=400",
+                desc: "Help map canopy tree roots, monitor rare hornbill populations, and sleep in suspended eco-capsules built with zero wood logging.",
+                lat: 460, lon: 180,
+                metrics: { solar: "100%", plastic: "100%", local: "100%", carbon: "18.2" },
+                pledge: "5% of booking value is directly spent on reforestation buffer parcels managed with the Sinharaja Protection Society.",
+                reviews: [
+                    { author: "Evelyn K.", rating: 5, text: "Truly breathtaking. Sleeping in the canopy with zero carbon print felt magical. Our local guide Kusal knew every bird call!" },
+                    { author: "Markus S.", rating: 5, text: "100% recommend. They showed us exactly where our conservation pledge went." }
+                ]
+            },
+            {
+                id: 2,
+                title: "Ella Rock Treeplanting Ridge Hike",
+                location: "Ella",
+                type: "Hiking & Trek",
+                rating: 4.8,
+                price: 40,
+                ecoRating: 4,
+                practices: "Native sapling donation, organic meal support",
+                image: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=400",
+                desc: "Traverse high misty hills with a local guide. Plant an endemic teak tree in your name to restore the local mountain watershed.",
+                lat: 410, lon: 230,
+                metrics: { solar: "75%", plastic: "90%", local: "100%", carbon: "12.4" },
+                pledge: "Each trekker receives an organic local meal cooked on mud stoves by Ella cooperative families.",
+                reviews: [
+                    { author: "Anjali P.", rating: 4, text: "Excellent hike. The planting ceremony was memorable and the panoramic vistas were spectacular." }
+                ]
+            },
+            {
+                id: 3,
+                title: "Yala Leopard Tracking & Safari Conservation",
+                location: "Yala",
+                type: "Wildlife Safari",
+                rating: 4.9,
+                price: 90,
+                ecoRating: 5,
+                practices: "Low emission EV jeeps, portion of ticket funds wild patrols",
+                image: "https://images.unsplash.com/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&q=80&w=400",
+                desc: "Explore wild scrubs in non-invasive electric jeeps, helping catalog leopard spot patterns with conservation biologists.",
+                lat: 480, lon: 265,
+                metrics: { solar: "90%", plastic: "100%", local: "95%", carbon: "24.5" },
+                pledge: "Maintains zero noise-pollution compliance. A percentage of fees employs local anti-poaching trackers.",
+                reviews: [
+                    { author: "Tariq J.", rating: 5, text: "Spotted three leopards! Doing this silently in an electric jeep was peaceful and deeply respectful to the beasts." }
+                ]
+            },
+            {
+                id: 4,
+                title: "Mirissa Ethical Blue Whale Bio-cruise",
+                location: "Mirissa",
+                type: "Coastal Ecosystems",
+                rating: 4.7,
+                price: 65,
+                ecoRating: 4,
+                practices: "Hydro-acoustic noise minimizer, ocean plastic collection",
+                image: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?auto=format&fit=crop&q=80&w=400",
+                desc: "Observe gentle blue whales on quiet hydro-acoustic vessels that prevent sonar stress. Help grab surface plastics during the voyage.",
+                lat: 525, lon: 170,
+                metrics: { solar: "60%", plastic: "100%", local: "90%", carbon: "14.1" },
+                pledge: "Keeps a strict 100-meter approach limit to prioritize animal marine safety over tourist pictures.",
+                reviews: [
+                    { author: "Claire D.", rating: 5, text: "Incredible commitment to ocean health. The crew collected floating waste and gave a brilliant presentation on whale migratory patterns." }
+                ]
+            },
+            {
+                id: 5,
+                title: "Knuckles Range Organic Farm Stay",
+                location: "Knuckles",
+                type: "Hiking & Trek",
+                rating: 4.6,
+                price: 35,
+                ecoRating: 5,
+                practices: "Permaculture, zero transport farm-to-table meals",
+                image: "https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?auto=format&fit=crop&q=80&w=400",
+                desc: "Live with a rural Knuckles household, harvest ancient spice seeds, and trek through rugged mist-covered rock trails.",
+                lat: 305, lon: 225,
+                metrics: { solar: "100%", plastic: "100%", local: "100%", carbon: "20.0" },
+                pledge: "Directly funds the indigenous farming communities, bypasses middle-man commissions completely.",
+                reviews: [
+                    { author: "Samuel T.", rating: 4, text: "A truly humblying homestay. The curries were outstanding and harvesting real Ceylon cardamom was unique." }
+                ]
+            },
+            // Newly Generated/Expanded Offerings for Scenario Depth
+            {
+                id: 6,
+                title: "Wilpattu Lakes Wildlife Monitoring Ranger Camp",
+                location: "Yala",
+                type: "Wildlife Safari",
+                rating: 4.9,
+                price: 110,
+                ecoRating: 5,
+                practices: "Solar-sensor wildlife cameras, local waterhole restoration",
+                image: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&q=80&w=400",
+                desc: "Assist national park officers in configuring nocturnal trail cams, logging native bird populations, and learning pristine tracking skills.",
+                lat: 470, lon: 250,
+                metrics: { solar: "100%", plastic: "100%", local: "100%", carbon: "30.4" },
+                pledge: "Empowers rural dry-zone youth with wildlife tracking certifications and technical field employment.",
+                reviews: [
+                    { author: "Hana L.", rating: 5, text: "Fascinating insider look! Setting trail cameras and checking logs felt like being part of a true scientific documentary." }
+                ]
+            },
+            {
+                id: 7,
+                title: "Sigiriya Organic Village Permaculture School",
+                location: "Ella",
+                type: "Volunteering & Nature",
+                rating: 4.5,
+                price: 30,
+                ecoRating: 4,
+                practices: "Greywater recycling, traditional seed archiving",
+                image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=400",
+                desc: "Learn age-old Sri Lankan farming systems under Sigiriya's iconic monolith, design composting systems, and help preserve rare heirloom grains.",
+                lat: 400, lon: 220,
+                metrics: { solar: "80%", plastic: "95%", local: "100%", carbon: "9.5" },
+                pledge: "Protects native agricultural practices from commercial pesticide encroachment through communal training modules.",
+                reviews: []
+            },
+            {
+                id: 8,
+                title: "Kitulgala Jungle River Clean Rafting",
+                location: "Sinharaja",
+                type: "Hiking & Trek",
+                rating: 4.7,
+                price: 50,
+                ecoRating: 4,
+                practices: "Zero-motor eco rafts, continuous river cleanup program",
+                image: "https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&q=80&w=400",
+                desc: "Ride pristine whitewater using manual rafts. Every trip clears floating trash to ensure the local river ecosystem stays clean.",
+                lat: 445, lon: 195,
+                metrics: { solar: "50%", plastic: "100%", local: "100%", carbon: "11.2" },
+                pledge: "All safety personnel are recruited directly from nearby flood-prone rural villages to ensure secure community wage models.",
+                reviews: [
+                    { author: "Gilles B.", rating: 4, text: "Thoroughly exciting! Knowing we were keeping the river pristine made the adventure even sweeter." }
+                ]
+            },
+            {
+                id: 9,
+                title: "Pigeon Island Coral Restoration Project",
+                location: "Mirissa",
+                type: "Coastal Ecosystems",
+                rating: 5,
+                price: 85,
+                ecoRating: 5,
+                practices: "Biorock growth systems, plastic-free reef propagation",
+                image: "https://images.unsplash.com/photo-1546026423-cc4642628d2b?auto=format&fit=crop&q=80&w=400",
+                desc: "Snorkel alongside marine biologists to plant live coral fragments on micro-electrical bioref structures to protect marine life.",
+                lat: 510, lon: 190,
+                metrics: { solar: "90%", plastic: "100%", local: "90%", carbon: "15.0" },
+                pledge: "10% of revenue finances ocean temperature warning buoys in Sri Lanka's shallow coral shelves.",
+                reviews: [
+                    { author: "Yuki O.", rating: 5, text: "Absolute highlight of my trip. We saw reef sharks swimming over our newly propagated coral beds." }
+                ]
+            },
+            {
+                id: 10,
+                title: "Horton Plains Carbon Footprint Forest Hike",
+                location: "Knuckles",
+                type: "Hiking & Trek",
+                rating: 4.8,
+                price: 45,
+                ecoRating: 5,
+                practices: "Completely carbon-neutral, local trail rebuilding",
+                image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=400",
+                desc: "Wander through beautiful montane grasslands and cloud forests. Learn about unique alpine biodiversity and fragile moisture cycles.",
+                lat: 320, lon: 240,
+                metrics: { solar: "100%", plastic: "100%", local: "100%", carbon: "22.1" },
+                pledge: "Maintains absolute zero-waste guidelines on high-altitude reserves. Funds help fix eroded pathway borders.",
+                reviews: []
+            }
+        ];
+
+        let experiences = [...initialExperiences];
+        let bookedExperiences = [
+            {
+                id: 1,
+                experience: experiences[1],
+                date: "2026-08-12",
+                guests: 2,
+                totalPrice: 80,
+                isCompleted: false
+            },
+            {
+                id: 2,
+                experience: experiences[3],
+                date: "2026-06-25",
+                guests: 1,
+                totalPrice: 65,
+                isCompleted: true
+            }
+        ];
+        
+        let wishlist = [3, 9];
+        let activeTheme = "rainforest";
+        let hasActiveEcoPass = false;
+        let selectedVoyagerNodes = [];
+        let activeTransitMode = "electric"; // "electric" | "train" | "hybrid"
+
+        // i18n Translations Dictionary
+        const translations = {
+            en: {
+                nav_discovery: "Discovery Hub",
+                nav_journeys: "Eco-Journeys",
+                nav_voyager: "Voyager Planner",
+                nav_provider: "EEN Network",
+                nav_settings: "Settings",
+            },
+            si: {
+                nav_discovery: "ගවේෂණ කේන්ද්‍රය",
+                nav_journeys: "පරිසර චාරිකා",
+                nav_voyager: "සිතියම් සැලසුම්කරු",
+                nav_provider: "පරිසර ජාලය",
+                nav_settings: "සැකසුම්",
+            },
+            ta: {
+                nav_discovery: "கண்டுபிடிப்பு மையம்",
+                nav_journeys: "சுற்றுச்சூழல் பயணங்கள்",
+                nav_voyager: "வரைபடத் திட்டமிடுபவர்",
+                nav_provider: "ஈஎன் நெட்வொர்க்",
+                nav_settings: "அமைப்புகள்",
+            },
+            fr: {
+                nav_discovery: "Hub Découverte",
+                nav_journeys: "Éco-Voyages",
+                nav_voyager: "Planificateur Voyager",
+                nav_provider: "Réseau EEN",
+                nav_settings: "Paramètres",
+            }
+        };
+
+        // Window Onload Starter
+        window.onload = function() {
+            populateLocationCheckboxes();
+            renderCatalog();
+            renderBookedExperiences();
+            renderWishlist();
+            renderRecommendations();
+            initProviderAnalytics();
+            updateVoyagerDisplay();
+            renderManifestList();
+        };
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-theme-muted hover:text-white";
+            });
+
+            document.getElementById(`tabContent-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+            activeBtn.className = "tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-theme-primary text-white shadow-md";
+        }
+
+        // Populates Locations checklist filter
+        function populateLocationCheckboxes() {
+            const locations = [...new Set(experiences.map(exp => exp.location))];
+            const container = document.getElementById('locationCheckboxes');
+            container.innerHTML = locations.map(loc => `
+                <label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" value="${loc}" class="rounded border-theme bg-black/40 text-emerald-500 focus:ring-emerald-500 cursor-pointer" onchange="applyFilters()">
+                    <span>${loc}</span>
+                </label>
+            `).join('');
+        }
+
+        // Renders Catalog Listings based on active state arrays
+        function renderCatalog() {
+            const grid = document.getElementById('experiencesGrid');
+            grid.innerHTML = '';
+
+            experiences.forEach(exp => {
+                const leaves = Array(exp.ecoRating).fill('<i class="fas fa-leaf text-emerald-400"></i>').join('');
+                const inWishlist = wishlist.includes(exp.id);
+                const wishlistBtnClass = inWishlist ? 'text-rose-500 bg-rose-500/10' : 'text-slate-400 bg-white/5 hover:bg-white/10';
+
+                grid.innerHTML += `
+                    <div class="custom-card rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-300 flex flex-col h-full shadow-lg">
+                        <div class="h-44 overflow-hidden relative">
+                            <img src="${exp.image}" alt="${exp.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-xs font-bold text-white px-2.5 py-1 rounded-full flex items-center gap-1">
+                                <i class="fas fa-map-marker-alt text-emerald-400"></i> ${exp.location}
+                            </span>
+                            <span class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-xs font-bold text-white px-2 py-1 rounded-full flex items-center gap-1">
+                                ${leaves}
+                            </span>
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow space-y-3 text-xs">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-theme-accent tracking-wider">${exp.type}</span>
+                                <h4 class="font-bold text-sm sm:text-base text-white mt-1 group-hover:text-emerald-300 transition-colors">${exp.title}</h4>
+                            </div>
+                            <p class="text-xs text-theme-muted leading-relaxed flex-grow line-clamp-3">${exp.desc}</p>
+                            
+                            <div class="bg-black/30 p-2.5 rounded-xl border border-theme text-[11px] text-theme-muted">
+                                <strong class="text-emerald-400">Eco Practice:</strong> ${exp.practices}
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2 border-t border-theme">
+                                <div>
+                                    <span class="text-[10px] text-theme-muted uppercase tracking-wider block">Price Base</span>
+                                    <strong class="text-lg text-white font-extrabold">$${exp.price} <span class="text-xs font-normal text-theme-muted">/ Day</span></strong>
+                                </div>
+                                <div class="flex gap-1.5">
+                                    <button onclick="openDetailsModal(${exp.id})" class="p-2.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl transition-all" title="View Reviews & Practices">
+                                        <i class="fas fa-circle-info"></i>
+                                    </button>
+                                    <button onclick="toggleWishlist(${exp.id})" class="p-2.5 rounded-xl transition-all ${wishlistBtnClass}" title="Add to Wishlist">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button onclick="openBookingModal(${exp.id})" class="bg-theme-primary text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-theme-primary/90 transition-all shadow-md">
+                                        Book Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('resultsCount').innerText = experiences.length;
+        }
+
+        // Active filter implementation
+        function applyFilters() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const typeVal = document.getElementById('typeFilter').value;
+            const ratingVal = parseInt(document.getElementById('ratingFilter').value);
+
+            const checkedLocations = Array.from(document.querySelectorAll('#locationCheckboxes input[type="checkbox"]:checked')).map(el => el.value);
+
+            experiences = initialExperiences.filter(exp => {
+                const matchesSearch = exp.title.toLowerCase().includes(searchVal) || exp.location.toLowerCase().includes(searchVal);
+                const matchesType = typeVal === 'all' || exp.type === typeVal;
+                const matchesRating = exp.ecoRating >= ratingVal;
+                const matchesLocation = checkedLocations.length === 0 || checkedLocations.includes(exp.location);
+
+                return matchesSearch && matchesType && matchesRating && matchesLocation;
+            });
+
+            renderCatalog();
+        }
+
+        function updateRatingLabel(val) {
+            document.getElementById('ratingValue').innerText = `${val}+ Leaves`;
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('ratingFilter').value = 3;
+            updateRatingLabel(3);
+            document.querySelectorAll('#locationCheckboxes input[type="checkbox"]').forEach(el => el.checked = false);
+            
+            experiences = [...initialExperiences];
+            renderCatalog();
+            showToast("Filters Reset", "Catalog restored to default listings.");
+        }
+
+        // Open details modal
+        function openDetailsModal(id) {
+            const exp = initialExperiences.find(e => e.id === id);
+            if (!exp) return;
+
+            document.getElementById('reviewExpId').value = id;
+            document.getElementById('detailImg').src = exp.image;
+            document.getElementById('detailBadgeType').innerText = exp.type;
+            document.getElementById('detailTitle').innerText = exp.title;
+            document.getElementById('detailLocation').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${exp.location}, Sri Lanka`;
+            document.getElementById('detailDesc').innerText = exp.desc;
+            document.getElementById('detailSolar').innerText = exp.metrics.solar;
+            document.getElementById('detailPlastic').innerText = exp.metrics.plastic;
+            document.getElementById('detailLocalStaff').innerText = exp.metrics.local;
+            document.getElementById('detailCarbonOffset').innerText = `${exp.metrics.carbon} kg`;
+            document.getElementById('detailPledge').innerText = exp.pledge;
+
+            // Render Reviews list
+            renderReviewsList(exp);
+
+            document.getElementById('detailBookBtn').onclick = function() {
+                closeDetailsModal();
+                openBookingModal(id);
+            };
+
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function renderReviewsList(exp) {
+            const list = document.getElementById('detailReviewsList');
+            document.getElementById('detailReviewsCount').innerText = `${exp.reviews.length} Reviews`;
+            
+            if (exp.reviews.length === 0) {
+                list.innerHTML = `<p class="text-xs text-theme-muted italic">No traveler reviews posted yet. Be the first to share your footprint feedback!</p>`;
+                return;
+            }
+
+            list.innerHTML = exp.reviews.map(rev => `
+                <div class="bg-black/30 p-3 rounded-xl border border-theme text-xs space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-white">${rev.author}</span>
+                        <span class="text-theme-accent">${'⭐'.repeat(rev.rating)}</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed italic">"${rev.text}"</p>
+                </div>
+            `).join('');
+        }
+
+        function submitReview(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('reviewExpId').value);
+            const author = document.getElementById('reviewAuthor').value;
+            const rating = parseInt(document.getElementById('reviewRating').value);
+            const text = document.getElementById('reviewText').value;
+
+            const exp = initialExperiences.find(e => e.id === id);
+            if (!exp) return;
+
+            exp.reviews.unshift({ author, rating, text });
+            document.getElementById('addReviewForm').reset();
+            renderReviewsList(exp);
+            showToast("Review Posted", "Thank you for sharing your green experience feed!");
+        }
+
+        // Booking Modal Management
+        function openBookingModal(expId) {
+            const exp = initialExperiences.find(e => e.id === expId);
+            if (!exp) return;
+
+            document.getElementById('modalExperienceId').value = expId;
+            document.getElementById('modalExperienceTitle').innerText = exp.title;
+            document.getElementById('bookingDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingGuests').value = 1;
+
+            if (hasActiveEcoPass) {
+                document.getElementById('modalRatePlan').innerText = "Infinite Eco-Pass (100% Free)";
+            } else {
+                document.getElementById('modalRatePlan').innerText = "Standard Cloud Base";
+            }
+
+            updateBookingModalPrice();
+            document.getElementById('bookingModal').classList.remove('hidden');
+        }
+
+        function updateBookingModalPrice() {
+            const expId = parseInt(document.getElementById('modalExperienceId').value);
+            const exp = initialExperiences.find(e => e.id === expId);
+            const guests = parseInt(document.getElementById('bookingGuests').value) || 1;
+
+            if (!exp) return;
+
+            let finalPrice = hasActiveEcoPass ? 0 : (exp.price * guests);
+            document.getElementById('modalTotalPrice').innerText = `$${finalPrice.toFixed(2)}`;
+
+            let co2Savings = exp.ecoRating * 8.2 * guests;
+            document.getElementById('modalCarbonSaving').innerText = `${co2Savings.toFixed(1)}kg`;
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+        }
+
+        function confirmBooking(event) {
+            event.preventDefault();
+            const expId = parseInt(document.getElementById('modalExperienceId').value);
+            const exp = initialExperiences.find(e => e.id === expId);
+            const date = document.getElementById('bookingDate').value;
+            const guests = parseInt(document.getElementById('bookingGuests').value) || 1;
+
+            if (!exp) return;
+
+            const newBooking = {
+                id: bookedExperiences.length + 1,
+                experience: exp,
+                date: date,
+                guests: guests,
+                totalPrice: hasActiveEcoPass ? 0 : (exp.price * guests),
+                isCompleted: false
+            };
+
+            bookedExperiences.push(newBooking);
+            closeBookingModal();
+            renderBookedExperiences();
+            renderManifestList();
+            showToast("Booking Successful!", `Confirmed journey for ${guests} guests to ${exp.location}.`);
+        }
+
+        function renderBookedExperiences() {
+            const container = document.getElementById('bookedExperiencesList');
+            container.innerHTML = '';
+
+            if (bookedExperiences.length === 0) {
+                container.innerHTML = `
+                    <div class="custom-card rounded-2xl p-6 text-center text-theme-muted italic">
+                        No active bookings. Start exploring the Eco-Discovery Hub!
+                    </div>
+                `;
+                return;
+            }
+
+            bookedExperiences.forEach(bk => {
+                const badge = bk.isCompleted 
+                    ? `<span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">Completed</span>`
+                    : `<span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Upcoming</span>`;
+
+                container.innerHTML += `
+                    <div class="custom-card rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
+                        <img src="${bk.experience.image}" alt="${bk.experience.title}" class="w-full md:w-28 h-20 rounded-xl object-cover">
+                        <div class="flex-grow space-y-1 text-center md:text-left text-xs">
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                                <h4 class="font-bold text-sm sm:text-base text-white">${bk.experience.title}</h4>
+                                ${badge}
+                            </div>
+                            <div class="text-xs text-theme-muted space-y-0.5">
+                                <p><i class="fas fa-calendar-alt text-theme-primary mr-1"></i> Date: ${bk.date} • <i class="fas fa-users text-theme-primary mx-1"></i> Guests: ${bk.guests}</p>
+                                <p><i class="fas fa-shield-alt text-emerald-400 mr-1"></i> Bio-Practice: ${bk.experience.practices}</p>
+                            </div>
+                        </div>
+                        <div class="text-center md:text-right shrink-0 space-y-2 text-xs">
+                            <div>
+                                <span class="text-[10px] text-theme-muted uppercase block">Total Cost Paid</span>
+                                <strong class="text-sm sm:text-base text-theme-accent font-extrabold">$${bk.totalPrice.toFixed(2)}</strong>
+                            </div>
+                            <div class="flex gap-1.5 justify-center md:justify-end">
+                                <button onclick="shareBooking(${bk.id})" class="text-[11px] bg-white/5 border border-theme text-theme-muted hover:text-white px-2.5 py-1 rounded-lg font-semibold" title="Share Journey">
+                                    <i class="fas fa-share-alt"></i> Share
+                                </button>
+                                <button onclick="cancelBooking(${bk.id})" class="text-[11px] bg-red-500/15 border border-red-500/20 text-red-400 hover:bg-red-500/20 px-2.5 py-1 rounded-lg font-semibold">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update user stats
+            let totalCarbonSaved = bookedExperiences.reduce((acc, curr) => acc + (curr.experience.ecoRating * 8.2 * curr.guests), 0);
+            let totalCommunityFund = bookedExperiences.reduce((acc, curr) => acc + (curr.totalPrice * 0.05), 0);
+            
+            document.getElementById('headerCarbonCounter').innerText = `${totalCarbonSaved.toFixed(1)} kg`;
+            document.getElementById('statCarbonOffset').innerText = `${totalCarbonSaved.toFixed(1)} kg`;
+            document.getElementById('statCommunityFund').innerText = `$${totalCommunityFund.toFixed(2)}`;
+            document.getElementById('statCompletedCount').innerText = `${bookedExperiences.filter(b => b.isCompleted).length} Trips`;
+        }
+
+        // Dynamic Recommendations using basic Tag matching on regions or activities
+        function renderRecommendations() {
+            const container = document.getElementById('recommendationsContainer');
+            container.innerHTML = '';
+
+            const activeBookedIds = bookedExperiences.map(b => b.experience.id);
+            const recommendations = initialExperiences.filter(exp => !activeBookedIds.includes(exp.id));
+
+            if (recommendations.length === 0) {
+                container.innerHTML = `<p class="text-xs text-theme-muted italic">No predictions today. You've fully chartered Ceylon!</p>`;
+                return;
+            }
+
+            recommendations.slice(0, 3).forEach(exp => {
+                container.innerHTML += `
+                    <div class="bg-black/25 rounded-xl p-3 border border-theme flex items-center justify-between gap-2.5 hover:bg-black/35 transition-all text-xs">
+                        <div class="flex items-center gap-2">
+                            <img src="${exp.image}" class="w-10 h-10 object-cover rounded-lg">
+                            <div>
+                                <h5 class="font-bold text-xs text-white line-clamp-1">${exp.title}</h5>
+                                <p class="text-[9px] text-emerald-400 font-bold uppercase">${exp.location}</p>
+                            </div>
+                        </div>
+                        <button onclick="openBookingModal(${exp.id})" class="bg-theme-primary text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shrink-0">
+                            Book
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // Sorting itinerary booking lists
+        function sortBookings(method) {
+            if (method === 'date') {
+                bookedExperiences.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else if (method === 'rating') {
+                bookedExperiences.sort((a, b) => b.experience.ecoRating - a.experience.ecoRating);
+            }
+            renderBookedExperiences();
+            showToast("Itinerary Sorted", `List updated via criteria: ${method}`);
+        }
+
+        function toggleWishlist(id) {
+            const index = wishlist.indexOf(id);
+            if (index > -1) {
+                wishlist.splice(index, 1);
+                showToast("Wishlist", "Experience removed from list.");
+            } else {
+                wishlist.push(id);
+                showToast("Wishlist Added", "Experience saved to wishlist.");
+            }
+            renderCatalog();
+            renderWishlist();
+        }
+
+        function renderWishlist() {
+            const container = document.getElementById('wishlistContainer');
+            container.innerHTML = '';
+
+            if (wishlist.length === 0) {
+                container.innerHTML = `<p class="text-xs text-theme-muted italic">Wishlist empty.</p>`;
+                document.getElementById('statWishlistCount').innerText = "0 Items";
+                return;
+            }
+
+            wishlist.forEach(id => {
+                const exp = initialExperiences.find(e => e.id === id);
+                if (!exp) return;
+
+                container.innerHTML += `
+                    <div class="bg-black/30 p-2.5 rounded-xl border border-theme flex items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-2">
+                            <img src="${exp.image}" class="w-10 h-10 object-cover rounded-lg">
+                            <div>
+                                <h5 class="font-bold text-xs text-white line-clamp-1">${exp.title}</h5>
+                                <p class="text-[9px] text-theme-muted">${exp.location} • $${exp.price}/day</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="openBookingModal(${exp.id})" class="text-[10px] bg-theme-primary text-white p-1.5 rounded-lg"><i class="fas fa-shopping-cart"></i></button>
+                            <button onclick="toggleWishlist(${exp.id})" class="text-[10px] bg-rose-500/20 text-rose-400 p-1.5 rounded-lg"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('statWishlistCount').innerText = `${wishlist.length} Items`;
+        }
+
+        function shareBooking(bookingId) {
+            const booking = bookedExperiences.find(b => b.id === bookingId);
+            if (!booking) return;
+
+            const shareText = `I just booked ${booking.experience.title} in beautiful Sri Lanka via ETCP! Support sustainable tourism.`;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = shareText;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast("Copied to Clipboard", "Share draft copied successfully.");
+        }
+
+        function cancelBooking(bookingId) {
+            bookedExperiences = bookedExperiences.filter(b => b.id !== bookingId);
+            renderBookedExperiences();
+            renderManifestList();
+            showToast("Booking Cancelled", "The itinerary reservation has been refunded.");
+        }
+
+        function toggleMapNode(nodeId) {
+            const index = selectedVoyagerNodes.indexOf(nodeId);
+            const circle = document.getElementById(`mapCircle-${nodeId}`);
+
+            if (index > -1) {
+                selectedVoyagerNodes.splice(index, 1);
+                circle.classList.remove('fill-amber-400');
+                circle.classList.add('fill-emerald-400');
+            } else {
+                selectedVoyagerNodes.push(nodeId);
+                circle.classList.remove('fill-emerald-400');
+                circle.classList.add('fill-amber-400');
+            }
+
+            updateVoyagerDisplay();
+        }
+
+        function setTransitMode(mode) {
+            activeTransitMode = mode;
+            document.querySelectorAll('.transit-btn').forEach(btn => {
+                btn.className = "transit-btn px-2.5 py-2 rounded-xl text-center bg-white/5 border border-theme text-theme-muted font-semibold transition-all";
+            });
+            document.getElementById(`transitBtn-${mode}`).className = "transit-btn px-2.5 py-2 rounded-xl text-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-semibold transition-all";
+            updateVoyagerDisplay();
+        }
+
+        function updateVoyagerDisplay() {
+            const selectedContainer = document.getElementById('voyagerSelectedNodes');
+            const spotlight = document.getElementById('spotlightCard');
+
+            if (selectedVoyagerNodes.length === 0) {
+                selectedContainer.innerHTML = `<span class="text-xs text-slate-500 italic">No nodes active. Tap dots on the map outline to add!</span>`;
+                spotlight.innerHTML = `
+                    <h4 class="font-bold text-xs text-theme-muted uppercase tracking-wider">Destination Spotlight</h4>
+                    <div class="text-sm text-slate-400 italic">Click an island coordinate to preview detailed reserve bio-practices.</div>
+                `;
+                document.getElementById('routePathLine').setAttribute('d', '');
+                updateVoyagerMetrics(0);
+                return;
+            }
+
+            // Build select blocks
+            let html = '';
+            let dAttr = '';
+            let spotlightExp = null;
+
+            selectedVoyagerNodes.forEach((nodeId, idx) => {
+                const exp = initialExperiences.find(e => e.id === nodeId);
+                if (exp) {
+                    spotlightExp = exp; // focus on last active clicked
+                    html += `
+                        <span class="bg-theme-primary/10 text-theme-primary border border-theme-primary/30 text-xs px-2.5 py-1 rounded-xl flex items-center gap-1">
+                            ${exp.location} <button onclick="toggleMapNode(${nodeId})"><i class="fas fa-times-circle text-rose-400 ml-1"></i></button>
+                        </span>
+                    `;
+                    // connect SVG coordinate path
+                    if (idx === 0) {
+                        dAttr += `M ${exp.lon} ${exp.lat}`;
+                    } else {
+                        dAttr += ` L ${exp.lon} ${exp.lat}`;
+                    }
+                }
+            });
+
+            selectedContainer.innerHTML = html;
+            document.getElementById('routePathLine').setAttribute('d', dAttr);
+
+            // Update spotlight
+            if (spotlightExp) {
+                spotlight.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-eye text-emerald-400"></i>
+                        <h4 class="font-bold text-xs text-white uppercase tracking-wider">${spotlightExp.location} Ecosystem Details</h4>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <p class="text-xs font-bold text-slate-200">${spotlightExp.title}</p>
+                        <p class="text-[11px] text-slate-400">${spotlightExp.desc}</p>
+                        <div class="bg-black/40 p-2 rounded border border-theme text-[10px] space-y-1">
+                            <p class="font-bold text-emerald-400"><i class="fas fa-shield-halved"></i> Key Practices:</p>
+                            <p class="text-slate-300">${spotlightExp.practices}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Calculations based on node connections count
+            let totalDistance = (selectedVoyagerNodes.length - 1) * 125;
+            if (totalDistance < 0) totalDistance = 0;
+            updateVoyagerMetrics(totalDistance);
+        }
+
+        function updateVoyagerMetrics(distance) {
+            document.getElementById('voyagerDistance').innerText = `${distance} km`;
+            
+            // CO2 factors: Electric Taxi: 0.04kg/km, Train: 0.02kg/km, Hybrid: 0.08kg/km, Standard: 0.22kg/km
+            let standardCo2 = distance * 0.22;
+            let transitFactor = 0.04;
+            if (activeTransitMode === 'train') transitFactor = 0.02;
+            if (activeTransitMode === 'hybrid') transitFactor = 0.08;
+
+            let ecoCo2 = distance * transitFactor;
+            let netSaved = standardCo2 - ecoCo2;
+
+            document.getElementById('voyagerStandardCo2').innerText = `${standardCo2.toFixed(1)} kg CO2`;
+            document.getElementById('voyagerEcoCo2').innerText = `${ecoCo2.toFixed(1)} kg CO2`;
+            document.getElementById('voyagerNetSaved').innerText = `${netSaved.toFixed(1)} kg`;
+        }
+
+        function clearVoyagerItinerary() {
+            selectedVoyagerNodes.forEach(nodeId => {
+                const circle = document.getElementById(`mapCircle-${nodeId}`);
+                if (circle) {
+                    circle.classList.remove('fill-amber-400');
+                    circle.classList.add('fill-emerald-400');
+                }
+            });
+            selectedVoyagerNodes = [];
+            updateVoyagerDisplay();
+            showToast("Route Reset", "Voyager coordinate logs cleared.");
+        }
+
+        function bookEntireVoyager() {
+            if (selectedVoyagerNodes.length === 0) {
+                showToast("Itinerary Error", "Please select at least one node coordinate on the map.");
+                return;
+            }
+
+            let bookedCount = 0;
+            selectedVoyagerNodes.forEach(nodeId => {
+                const exp = initialExperiences.find(e => e.id === nodeId);
+                if (exp) {
+                    bookedExperiences.push({
+                        id: bookedExperiences.length + 1,
+                        experience: exp,
+                        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days out
+                        guests: 1,
+                        totalPrice: hasActiveEcoPass ? 0 : exp.price,
+                        isCompleted: false
+                    });
+                    bookedCount++;
+                }
+            });
+
+            clearVoyagerItinerary();
+            renderBookedExperiences();
+            renderManifestList();
+            showToast("Multi-Book Confirmed", `Successfully reserved ${bookedCount} ecosystem experiences on your route.`);
+        }
+
+        let eenChartInstance = null;
+
+        function initProviderAnalytics() {
+            const ctx = document.getElementById('eenAnalyticsChart').getContext('2d');
+            
+            const gradientBg = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientBg.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+            gradientBg.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+            const initialData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Ecosystem Engagements',
+                        data: [65, 84, 110, 142, 195, 240],
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        backgroundColor: gradientBg,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointHoverRadius: 8
+                    }
+                ]
+            };
+
+            eenChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: initialData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderManifestList() {
+            const body = document.getElementById('providerManifestBody');
+            body.innerHTML = '';
+
+            const activeManifest = bookedExperiences.map(bk => ({
+                id: bk.id,
+                name: "Verified Traveler",
+                experience: bk.experience.title,
+                date: bk.date,
+                amount: `$${(bk.totalPrice * 0.95).toFixed(2)}`, // Host receives 95% payout
+                payoutReleased: bk.isCompleted
+            }));
+
+            if (activeManifest.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500 italic">No cloud reservations recorded for your host account yet.</td></tr>`;
+                return;
+            }
+
+            activeManifest.forEach(item => {
+                const btn = item.payoutReleased 
+                    ? `<span class="bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/30">Cleared</span>`
+                    : `<button onclick="releasePayout(${item.id})" class="bg-theme-primary text-slate-900 font-bold px-2 py-1 rounded hover:bg-theme-primary/80 transition-colors">Release Payout</button>`;
+
+                body.innerHTML += `
+                    <tr class="border-b border-theme/40 text-[11px]">
+                        <td class="py-2 font-bold text-white">${item.name}</td>
+                        <td class="py-2 text-slate-400">${item.experience}</td>
+                        <td class="py-2 text-slate-400">${item.date}</td>
+                        <td class="py-2 text-right text-theme-accent font-extrabold">${item.amount}</td>
+                        <td class="py-2 text-center">${btn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function releasePayout(bookingId) {
+            const bk = bookedExperiences.find(b => b.id === bookingId);
+            if (!bk) return;
+
+            bk.isCompleted = true;
+            renderBookedExperiences();
+            renderManifestList();
+            showToast("Payout Transferred", "Cloud transaction dispatched to local Sri Lankan community bank account successfully.");
+        }
+
+        function handlePublishOffering(event) {
+            event.preventDefault();
+            const title = document.getElementById('offeringTitle').value;
+            const location = document.getElementById('offeringLocation').value;
+            const type = document.getElementById('offeringType').value;
+            const price = parseFloat(document.getElementById('offeringPrice').value);
+            const eco = parseInt(document.getElementById('offeringEco').value);
+            const practice = document.getElementById('offeringPractice').value;
+            const image = document.getElementById('offeringImage').value;
+
+            // Generate map coords offset
+            const xCoord = 150 + Math.random() * 100;
+            const yCoord = 300 + Math.random() * 150;
+
+            const newExp = {
+                id: initialExperiences.length + 1,
+                title: title,
+                location: location,
+                type: type,
+                rating: 4.5 + Math.random() * 0.5,
+                price: price,
+                ecoRating: eco,
+                practices: practice,
+                image: image,
+                desc: `A stunning local community offering hosted in the eco conservation buffer. Built completely under premium sustainable building codes.`,
+                lat: yCoord, lon: xCoord,
+                metrics: { solar: "100%", plastic: "100%", local: "100%", carbon: "15.4" },
+                pledge: `This host pledges to maintain continuous adherence to standard zero-carbon travel frameworks.`,
+                reviews: []
+            };
+
+            initialExperiences.push(newExp);
+            experiences = [...initialExperiences];
+            
+            populateLocationCheckboxes();
+            renderCatalog();
+            renderRecommendations();
+
+            // Reset EEN form
+            document.getElementById('providerOfferingForm').reset();
+            showToast("Offering Published", `"${title}" has been safely launched to cloud network filters.`);
+
+            if (eenChartInstance) {
+                eenChartInstance.data.datasets[0].data.push(265);
+                eenChartInstance.data.labels.push('Jul');
+                eenChartInstance.update();
+            }
+        }
+
+        function changeTheme(themeName) {
+            document.body.className = `theme-${themeName} app-bg text-theme-main transition-all duration-500 overflow-x-hidden`;
+            
+            document.querySelectorAll('[id^="themeCard-"]').forEach(card => {
+                card.className = "custom-card rounded-xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all text-center relative overflow-hidden group";
+            });
+
+            let cardId = `themeCard-${themeName}`;
+            let activeColor = themeName === 'rainforest' ? 'border-emerald-500' : themeName === 'ocean' ? 'border-sky-500' : 'border-amber-500';
+            document.getElementById(cardId).className = `custom-card rounded-xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all text-center relative overflow-hidden group border-2 ${activeColor}`;
+            
+            showToast("Visual Ecosystem Changed", `Transferred application context to ${themeName.toUpperCase()} ecosystem styling.`);
+        }
+
+        function toggleEcoPassSubscription() {
+            hasActiveEcoPass = !hasActiveEcoPass;
+            const btn = document.getElementById('passSubscribeBtn');
+            const badge = document.getElementById('headerPassBadge');
+            const walletState = document.getElementById('passStateText');
+
+            if (hasActiveEcoPass) {
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Pass Subscribed`;
+                btn.className = "w-full bg-rose-500 hover:bg-rose-400 text-slate-950 font-extrabold text-xs tracking-wider py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2";
+                badge.innerText = "Active (Infinite)";
+                badge.className = "text-emerald-400 font-extrabold uppercase";
+                
+                walletState.innerText = "Active Plan";
+                walletState.className = "text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30 font-bold";
+                showToast("Subscription Activated", "Your global Ceylon Eco-Pass gives you unlimited free partner entries.");
+            } else {
+                btn.innerHTML = `<i class="fas fa-ticket-alt"></i> Subscribe Now`;
+                btn.className = "w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs tracking-wider py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2";
+                badge.innerText = "Inactive";
+                badge.className = "text-theme-muted";
+
+                walletState.innerText = "Passive Plan";
+                walletState.className = "text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full border border-slate-700";
+                showToast("Subscription Revoked", "Switched back to standard base ticketing rates.");
+            }
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById('languageSelect').value;
+            const set = translations[lang];
+
+            if (set) {
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (set[key]) el.innerText = set[key];
+                });
+                showToast("Language Updated", `Switched cloud presentation language to: ${lang.toUpperCase()}`);
+            }
+        }
+
+        function changeFontScale(val) {
+            document.documentElement.style.setProperty('--font-scale', `${val}%`);
+            document.getElementById('fontScaleLabel').innerText = `${val}%`;
+        }
+
+        function toggleHighContrast() {
+            const toggle = document.getElementById('contrastToggle');
+            if (toggle.checked) {
+                document.body.classList.add('high-contrast');
+                showToast("Accessibility", "High Contrast View mode activated.");
+            } else {
+                document.body.classList.remove('high-contrast');
+                showToast("Accessibility", "Standard View profile restored.");
+            }
+        }
+
+        // Custom Premium Toast Mechanics
+        let toastTimeout = null;
+        function showToast(title, msg) {
+            clearTimeout(toastTimeout);
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = msg;
+            
+            const element = document.getElementById('toastNotification');
+            element.classList.remove('translate-x-96');
+            
+            toastTimeout = setTimeout(() => {
+                dismissToast();
+            }, 5000);
+        }
+
+        function dismissToast() {
+            document.getElementById('toastNotification').classList.add('translate-x-96');
+        }
+    </script>
+</body>
+</html>
