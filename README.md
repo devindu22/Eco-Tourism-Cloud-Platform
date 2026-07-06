@@ -113,6 +113,7 @@ let appState = {
     ecoPass: { active: false, tier: null }
     
 };
+
 All interactions trigger an immediate application state updates sequence, automatically followed by programmatic DOM UI view mutations to guarantee view-layer synchronicity.
 
 ---
