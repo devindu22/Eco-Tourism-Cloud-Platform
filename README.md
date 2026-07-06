@@ -100,7 +100,9 @@ The system manages runtime components through a centralized JavaScript tracking 
 
 JavaScript
 // System Application State Architecture Reference
+
 let appState = {
+
     currentTheme: 'rainforest',
     fontSizeClass: 'text-base',
     highContrast: false,
@@ -109,6 +111,7 @@ let appState = {
     bookings: [],
     voyagerRoute: { start: null, end: null, transit: 'train' },
     ecoPass: { active: false, tier: null }
+    
 };
 All interactions trigger an immediate application state updates sequence, automatically followed by programmatic DOM UI view mutations to guarantee view-layer synchronicity.
 
